@@ -5,7 +5,7 @@ import time
 import pickle
 
 
-class Paint:
+class AppGUI:
     def __init__(self, parent):
         self.parent = parent
         self.pixel = 20
@@ -51,12 +51,12 @@ class Paint:
         btn_delete_img = Button(toolbar_frame, text=' Delete ', command=self.del_func)
         btn_delete_img.grid(row=3, column=1, sticky=EW, padx=5, pady=5)
 
-        btn_recognise = Button(toolbar_frame, text='Recognise', command=print(2))  # need to do this func
+        btn_recognise = Button(toolbar_frame, text='Recognise', command=print(2))  # TODO: need to do this func
         btn_recognise.grid(row=4, column=0, sticky=EW, padx=5, pady=5)
-        btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)  # need to update this
+        btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)
         btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
 
-        btn_recognise = Button(toolbar_frame, text='Open', command=self.open_matrix)  # need to do this func
+        btn_recognise = Button(toolbar_frame, text='Open file', command=self.open_matrix)
         btn_recognise.grid(row=5, column=0, sticky=EW, padx=5, pady=5)
         # btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)  # need to update this
         # btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
@@ -96,7 +96,7 @@ class Paint:
         file = open(file_name, 'rb')
         self.matrix = pickle.load(file)
         file.close()
-        self.draw_grid('this is useless, just ignore')  # do not forget to delete this later
+        self.draw_grid('this is useless, just ignore')  # TODO: delete all like this-do not forget to delete this later
         for pixel_y in range(0, 500, self.pixel):
             for pixel_x in range(0, 500, self.pixel):
                 step += 1
@@ -112,53 +112,53 @@ class Paint:
 
         ask_save_frame = Frame(self.save_form)
         ask_save_frame.grid(columnspan=2, pady=5, padx=5)
-        ask_save_label = Label(ask_save_frame, text='What number was written?')
+        ask_save_label = Label(ask_save_frame)
+        ask_save_label.grid()
+        if self.train_directory == 'Number_train':
+            ask_save_entry = Entry(ask_save_frame, width=5, justify=CENTER)
+            ask_save_entry.grid(row=0, column=1)
+            ask_save_label.configure(text='What number was written?')
+
+            ask_save_btn_ok = Button(self.save_form, text='Ok', width=10,
+                                     command=lambda: self.save_train(ask_save_entry))
+            ask_save_btn_ok.grid(row=2, column=0, pady=5)
+            ask_save_btn_cancel = Button(self.save_form, text='Cancel', width=10, command=self.save_form.destroy)
+            ask_save_btn_cancel.grid(row=2, column=1, pady=5)
+
         if self.train_directory == 'Boolean_train':
             ask_save_label.configure(text='What symbol was writen?')
-        ask_save_label.grid()
-        ask_save_entry = Entry(ask_save_frame, width=5, justify=CENTER)
-        ask_save_entry.grid(row=0, column=1)
 
-        ask_save_btn_ok = Button(self.save_form, text='Ok', width=10, command=lambda: self.save_train(ask_save_entry))
-        ask_save_btn_ok.grid(row=2, column=0, pady=5)
-        ask_save_btn_cancel = Button(self.save_form, text='Cancel', width=10, command=self.save_form.destroy)
-        ask_save_btn_cancel.grid(row=2, column=1, pady=5)
+            ask_save_btn_ok = Button(self.save_form, text='True', width=10,
+                                     command=lambda: self.save_train(boolean=True))
+            ask_save_btn_ok.grid(row=2, column=0, pady=5, padx=5)
+            ask_save_btn_ok = Button(self.save_form, text='False', width=10,
+                                     command=lambda: self.save_train(boolean=False))
+            ask_save_btn_ok.grid(row=2, column=1, pady=5, padx=5)
+
         # only GUI need to add func for save
 
-    def save_train(self, entry):
-        data = entry.get()
+    def save_train(self, entry=None, boolean=None):
+        # TODO: prohibit adding more than one character and add red glow for letters
+        #   https://www.cyberforum.ru/python-beginners/thread1196795.html
         file_time = int(time.time())
-        try:
-            if data == 'True':
-                data = True
-            elif data == 'False':
-                data = False
-        except ValueError:
-            pass
-
-        try:
-            int(data) / 2
-            data = int(data)
-        except ValueError:
-            pass
 
         if self.train_directory == 'Boolean_train':
-            if isinstance(data, bool):
-                file = open(f'{self.train_directory}\{data}_{file_time}.goose', 'wb')
-                pickle.dump(self.matrix, file)
-                file.close()
-                self.save_form.destroy()
-            else:
-                messagebox.showerror('Error', 'You should enter the bool type')
+            file = open(f'{self.train_directory}\{boolean}_{file_time}.goose', 'wb')
+            pickle.dump(self.matrix, file)
+            file.close()
+            self.save_form.destroy()
 
         elif self.train_directory == 'Number_train':
-            if isinstance(data, int):
-                file = open(f'{self.train_directory}\{data}_{file_time}.goose', 'wb')
-                pickle.dump(self.matrix, file)
-                file.close()
-                self.save_form.destroy()
-            else:
+            data = entry.get()
+            try:
+                data = int(data)
+            except ValueError:
                 messagebox.showerror('Error', 'You should enter the number type')
+                return None
+            file = open(f'{self.train_directory}\{data}_{file_time}.goose', 'wb')
+            pickle.dump(self.matrix, file)
+            file.close()
+            self.save_form.destroy()
 
     def del_func(self):
         self.del_all('this is useless, just ignore')  # do not forget to delete this later
@@ -220,6 +220,6 @@ class Paint:
 root = Tk()
 root.geometry('700x500+200+200')
 root.resizable(False, False)
-Paint(root)
+AppGUI(root)
 
 root.mainloop()
