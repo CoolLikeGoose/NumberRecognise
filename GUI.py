@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from tkinter import filedialog
 import time
 import pickle
 
@@ -55,14 +56,19 @@ class Paint:
         btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)  # need to update this
         btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
 
+        btn_recognise = Button(toolbar_frame, text='Open', command=self.open_matrix)  # need to do this func
+        btn_recognise.grid(row=5, column=0, sticky=EW, padx=5, pady=5)
+        # btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)  # need to update this
+        # btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
+
         self.btn_mode_boolean = Button(toolbar_frame, text='Boolean mode', command=lambda: self.change_mode_func(True))
         self.btn_mode_boolean.configure(bg='lightblue')
-        self.btn_mode_boolean.grid(row=5, column=0, sticky=EW, padx=5, pady=5)
+        self.btn_mode_boolean.grid(row=6, column=0, sticky=EW, padx=5, pady=5)
         self.btn_mode_numbers = Button(toolbar_frame, text='Number mode', command=lambda: self.change_mode_func(False))
-        self.btn_mode_numbers.grid(row=5, column=1, sticky=EW, padx=5, pady=5)
+        self.btn_mode_numbers.grid(row=6, column=1, sticky=EW, padx=5, pady=5)
 
         btn_exit = Button(toolbar_frame, text='Exit', command=self.parent.destroy)
-        btn_exit.grid(row=6, column=0, sticky=EW, padx=5, pady=5)
+        btn_exit.grid(row=7, column=0, sticky=EW, padx=5, pady=5)
 
         # all binds
         self.font_entry.bind('<FocusOut>', self.change_font_entry_func)
@@ -83,6 +89,19 @@ class Paint:
             self.btn_mode_boolean.configure(bg='#F0F0F0')
             self.btn_mode_numbers.configure(bg='lightblue')
             self.train_directory = 'Number_train'
+
+    def open_matrix(self):
+        step = -1
+        file_name = filedialog.askopenfilename()
+        file = open(file_name, 'rb')
+        self.matrix = pickle.load(file)
+        file.close()
+        self.draw_grid('this is useless, just ignore')  # do not forget to delete this later
+        for pixel_y in range(0, 500, self.pixel):
+            for pixel_x in range(0, 500, self.pixel):
+                step += 1
+                if self.matrix[step]:
+                    self.cnv.create_rectangle(pixel_x, pixel_y, pixel_x + 19, pixel_y + 19, fill='blue')
 
     def add_train_func(self):
         self.save_form = Toplevel()
@@ -108,6 +127,7 @@ class Paint:
 
     def save_train(self, entry):
         data = entry.get()
+        file_time = int(time.time())
         try:
             if data == 'True':
                 data = True
@@ -124,7 +144,6 @@ class Paint:
 
         if self.train_directory == 'Boolean_train':
             if isinstance(data, bool):
-                file_time = time.time()
                 file = open(f'{self.train_directory}\{data}_{file_time}.goose', 'wb')
                 pickle.dump(self.matrix, file)
                 file.close()
@@ -134,7 +153,6 @@ class Paint:
 
         elif self.train_directory == 'Number_train':
             if isinstance(data, int):
-                file_time = time.time()
                 file = open(f'{self.train_directory}\{data}_{file_time}.goose', 'wb')
                 pickle.dump(self.matrix, file)
                 file.close()
