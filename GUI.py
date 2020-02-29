@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
+import time
+import pickle
 
 
 class Paint:
@@ -38,9 +40,9 @@ class Paint:
         self.font_entry.insert(0, self.pencil_width)
 
         # button toolbar sorted by rows
-        btn_upper_font = Button(toolbar_frame, text='+', command=self.upper_font)
+        btn_upper_font = Button(toolbar_frame, text='+', command=self.upper_font_func)
         btn_upper_font.grid(row=2, column=0, sticky='we', padx=5, pady=5)
-        btn_lower_font = Button(toolbar_frame, text='-', command=self.lower_font)
+        btn_lower_font = Button(toolbar_frame, text='-', command=self.lower_font_func)
         btn_lower_font.grid(row=2, column=1, sticky='we', padx=5, pady=5)
 
         btn_convert_img = Button(toolbar_frame, text='Convert', command=self.converting_func)
@@ -53,16 +55,17 @@ class Paint:
         btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)  # need to update this
         btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
 
-        self.btn_mode_boolean = Button(toolbar_frame, text='Boolean mode', command=lambda: self.change_mode(True))
+        self.btn_mode_boolean = Button(toolbar_frame, text='Boolean mode', command=lambda: self.change_mode_func(True))
         self.btn_mode_boolean.configure(bg='lightblue')
         self.btn_mode_boolean.grid(row=5, column=0, sticky=EW, padx=5, pady=5)
-        self.btn_mode_numbers = Button(toolbar_frame, text='Number mode', command=lambda: self.change_mode(False))
+        self.btn_mode_numbers = Button(toolbar_frame, text='Number mode', command=lambda: self.change_mode_func(False))
         self.btn_mode_numbers.grid(row=5, column=1, sticky=EW, padx=5, pady=5)
 
         btn_exit = Button(toolbar_frame, text='Exit', command=self.parent.destroy)
         btn_exit.grid(row=6, column=0, sticky=EW, padx=5, pady=5)
 
-        self.font_entry.bind('<FocusOut>', self.change_font_entry)
+        # all binds
+        self.font_entry.bind('<FocusOut>', self.change_font_entry_func)
         self.parent.bind('<r>', self.del_all)
         self.parent.bind('<e>', lambda event: print(self.figures))
         self.parent.bind('<q>', lambda event: self.parent.destroy())
@@ -71,7 +74,7 @@ class Paint:
         self.parent.bind('<f>', self.fill_pixels)
         self.cnv.bind('<B1-Motion>', self.draw)
 
-    def change_mode(self, mode):
+    def change_mode_func(self, mode):
         if mode:
             self.btn_mode_numbers.configure(bg='#F0F0F0')
             self.btn_mode_boolean.configure(bg='lightblue')
@@ -82,49 +85,78 @@ class Paint:
             self.train_directory = 'Number_train'
 
     def add_train_func(self):
-        save_form = Toplevel()
-        save_form.resizable(False, False)
-        save_form.title('Save new train data')
+        self.save_form = Toplevel()
+        self.save_form.geometry('+200+200')
+        self.save_form.wm_attributes('-topmost', 1)
+        self.save_form.resizable(False, False)
+        self.save_form.title('Save new train data')
 
-        ask_save_frame = Frame(save_form)
+        ask_save_frame = Frame(self.save_form)
         ask_save_frame.grid(columnspan=2, pady=5, padx=5)
         ask_save_label = Label(ask_save_frame, text='What number was written?')
+        if self.train_directory == 'Boolean_train':
+            ask_save_label.configure(text='What symbol was writen?')
         ask_save_label.grid()
         ask_save_entry = Entry(ask_save_frame, width=5, justify=CENTER)
         ask_save_entry.grid(row=0, column=1)
 
-        ask_save_btn_ok = Button(save_form, text='Ok', width=10)
+        ask_save_btn_ok = Button(self.save_form, text='Ok', width=10, command=lambda: self.save_train(ask_save_entry))
         ask_save_btn_ok.grid(row=2, column=0, pady=5)
-        ask_save_btn_cancel = Button(save_form, text='Cancel', width=10, command=save_form.destroy)
+        ask_save_btn_cancel = Button(self.save_form, text='Cancel', width=10, command=self.save_form.destroy)
         ask_save_btn_cancel.grid(row=2, column=1, pady=5)
         # only GUI need to add func for save
 
+    def save_train(self, entry):
+        data = entry.get()
+        try:
+            if data == 'True':
+                data = True
+            elif data == 'False':
+                data = False
+        except ValueError:
+            pass
+        if self.train_directory == 'Boolean_train':
+            if isinstance(data, bool):
+                file_time = time.time()
+                file = open(f'{self.train_directory}\{data}_{file_time}.goose', 'wb')
+                pickle.dump(self.matrix, file)
+                file.close()
+                self.save_form.destroy()
+            else:
+                messagebox.showerror('Error', 'You should enter the bool type')
+
+        if isinstance(data, bool) and self.train_directory == 'Number_train':
+            if isinstance(data, int):
+                file_time = time.time()
+                file = open(f'{self.train_directory}\{data}_{file_time}.goose', 'wb')
+                pickle.dump(self.matrix, file)
+                file.close()
+                self.save_form.destroy()
+            else:
+                messagebox.showerror('Error', 'You should enter the number type')
+
     def del_func(self):
-        self.del_all('this is useless, just ignore')
+        self.del_all('this is useless, just ignore')  # do not forget to delete this later
 
     def converting_func(self):
-        self.fill_pixels('this is useless, just ignore')
-        self.draw_grid('this is useless, just ignore')
+        self.fill_pixels('this is useless, just ignore')  # do not forget to delete this later
+        self.draw_grid('this is useless, just ignore')  # do not forget to delete this later
 
-    def change_font_entry(self, event):
+    def change_font_entry_func(self, event):
         try:
             self.pencil_width = int(self.font_entry.get())
         except ValueError:
             messagebox.showerror(title='Error', message='You should enter the valid number')
 
-    def upper_font(self):
+    def upper_font_func(self):
         self.pencil_width += 4
         self.font_entry.delete(0, END)
         self.font_entry.insert(0, self.pencil_width)
 
-    def lower_font(self):
+    def lower_font_func(self):
         self.pencil_width -= 4
         self.font_entry.delete(0, END)
         self.font_entry.insert(0, self.pencil_width)
-
-    def debug(self, event):
-        for elem in self.figures:
-            print(elem)
 
     def draw(self, event):
         self.figures.append((event.x + self.pencil_width,
@@ -151,8 +183,8 @@ class Paint:
             self.cnv.create_line(0, i, 500, i, width=1, fill='grey')
 
     def fill_pixels(self, event):
-        for pixel_x in range(0, 500, self.pixel):
-            for pixel_y in range(0, 500, self.pixel):
+        for pixel_y in range(0, 500, self.pixel):
+            for pixel_x in range(0, 500, self.pixel):
                 if self.cnv.find_overlapping(pixel_x + 1, pixel_y + 1, pixel_x + 19, pixel_y + 19):
                     self.cnv.create_rectangle(pixel_x, pixel_y, pixel_x + 19, pixel_y + 19, fill='blue')
                     self.matrix.append(1)
@@ -161,7 +193,7 @@ class Paint:
 
 
 root = Tk()
-root.geometry('700x500')
+root.geometry('700x500+200+200')
 root.resizable(False, False)
 Paint(root)
 
