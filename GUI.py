@@ -115,6 +115,13 @@ class Paint:
                 data = False
         except ValueError:
             pass
+
+        try:
+            int(data) / 2
+            data = int(data)
+        except ValueError:
+            pass
+
         if self.train_directory == 'Boolean_train':
             if isinstance(data, bool):
                 file_time = time.time()
@@ -125,7 +132,7 @@ class Paint:
             else:
                 messagebox.showerror('Error', 'You should enter the bool type')
 
-        if isinstance(data, bool) and self.train_directory == 'Number_train':
+        elif self.train_directory == 'Number_train':
             if isinstance(data, int):
                 file_time = time.time()
                 file = open(f'{self.train_directory}\{data}_{file_time}.goose', 'wb')
