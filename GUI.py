@@ -53,14 +53,16 @@ class AppGUI:
         btn_delete_img = Button(toolbar_frame, text=' Delete ', command=self.del_func)
         btn_delete_img.grid(row=3, column=1, sticky=EW, padx=5, pady=5)
 
-        btn_recognise = Button(toolbar_frame, text='Recognise', command=self.recognise_func)  # TODO: need to do this func
+        btn_recognise = Button(toolbar_frame, text='Recognise',
+                               command=self.recognise_func)  # TODO: need to do this func
         btn_recognise.grid(row=4, column=0, sticky=EW, padx=5, pady=5)
         btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)
         btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
 
         btn_recognise = Button(toolbar_frame, text='Open file', command=self.open_matrix)
         btn_recognise.grid(row=5, column=0, sticky=EW, padx=5, pady=5)
-        btn_nn_control = Button(toolbar_frame, text='Open NN', command=self.open_nn_control_func)  # TODO:need to update this
+        btn_nn_control = Button(toolbar_frame, text='Open NN',
+                                command=self.open_nn_control_func)  # TODO:need to update this
         btn_nn_control.grid(row=5, column=1, sticky=EW, padx=5, pady=5)
 
         self.btn_mode_boolean = Button(toolbar_frame, text='Boolean mode', command=lambda: self.change_mode_func(True))
@@ -69,12 +71,12 @@ class AppGUI:
         self.btn_mode_numbers = Button(toolbar_frame, text='Number mode', command=lambda: self.change_mode_func(False))
         self.btn_mode_numbers.grid(row=6, column=1, sticky=EW, padx=5, pady=5)
 
-        self.prediction_label = Label(toolbar_frame, font=('Ubuntu', 15), text=20)
+        self.prediction_label = Label(toolbar_frame, font=('Ubuntu', 15))
         self.prediction_label.grid(row=7, columnspan=2, sticky=EW, padx=5, pady=5)
 
-        btn_recognise = Button(toolbar_frame, text='True', command=lambda : self.add_train_after_prediction(True))
+        btn_recognise = Button(toolbar_frame, text='True', command=lambda: self.add_train_after_prediction(True))
         btn_recognise.grid(row=8, column=0, sticky=EW, padx=5, pady=5)
-        btn_nn_control = Button(toolbar_frame, text='False', command=lambda : self.add_train_after_prediction(False))
+        btn_nn_control = Button(toolbar_frame, text='False', command=lambda: self.add_train_after_prediction(False))
         btn_nn_control.grid(row=8, column=1, sticky=EW, padx=5, pady=5)
 
         btn_exit = Button(toolbar_frame, text='Exit', command=self.parent.destroy)
@@ -98,7 +100,6 @@ class AppGUI:
         else:
             pos = bool(eval(prediction) - 1)
             self.save_train(boolean=pos, windowed=False)
-
 
     def recognise_func(self):
         data = self.matrix
