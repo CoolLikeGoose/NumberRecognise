@@ -11,8 +11,10 @@ def sigm(x, deriv=False):
 
 train_data = []
 train_out = []
+file_count = 0
 
 for file_name in listdir('./Boolean_train'):
+    file_count += 1
     f = open(f'./Boolean_train/{file_name}', 'rb')
     data = pickle.load(f)
     f.close()
@@ -30,7 +32,7 @@ train_data = np.array([train_data])
 train_out = np.array([train_out]).T
 
 synaptic_weight = 2 * np.random.random((625, 1)) - 1
-train_data.shape = (6, 625)
+train_data.shape = (file_count, 625)
 
 for i in range(2000):
     outputs = sigm(np.dot(train_data, synaptic_weight))
@@ -41,7 +43,8 @@ for i in range(2000):
 
     synaptic_weight += adjustments
 
-f = open('weights', 'wb')
+f = open('weights.goose', 'wb')
 pickle.dump(synaptic_weight, f)
 f.close()
-print(outputs)
+if __name__ == '__main__':
+    print(outputs)

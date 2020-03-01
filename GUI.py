@@ -1,6 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
+from Neural_Network import sigm
+import numpy as np
 import time
 import pickle
 
@@ -51,15 +53,15 @@ class AppGUI:
         btn_delete_img = Button(toolbar_frame, text=' Delete ', command=self.del_func)
         btn_delete_img.grid(row=3, column=1, sticky=EW, padx=5, pady=5)
 
-        btn_recognise = Button(toolbar_frame, text='Recognise', command=print(2))  # TODO: need to do this func
+        btn_recognise = Button(toolbar_frame, text='Recognise', command=self.recognise_func)  # TODO: need to do this func
         btn_recognise.grid(row=4, column=0, sticky=EW, padx=5, pady=5)
         btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)
         btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
 
         btn_recognise = Button(toolbar_frame, text='Open file', command=self.open_matrix)
         btn_recognise.grid(row=5, column=0, sticky=EW, padx=5, pady=5)
-        # btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)  # need to update this
-        # btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
+        btn_nn_control = Button(toolbar_frame, text='Open NN', command=self.open_nn_control_func)  # TODO:need to update this
+        btn_nn_control.grid(row=5, column=1, sticky=EW, padx=5, pady=5)
 
         self.btn_mode_boolean = Button(toolbar_frame, text='Boolean mode', command=lambda: self.change_mode_func(True))
         self.btn_mode_boolean.configure(bg='lightblue')
@@ -67,8 +69,16 @@ class AppGUI:
         self.btn_mode_numbers = Button(toolbar_frame, text='Number mode', command=lambda: self.change_mode_func(False))
         self.btn_mode_numbers.grid(row=6, column=1, sticky=EW, padx=5, pady=5)
 
+        self.prediction_label = Label(toolbar_frame, font=('Ubuntu', 15), text=20)
+        self.prediction_label.grid(row=7, columnspan=2, sticky=EW, padx=5, pady=5)
+
+        btn_recognise = Button(toolbar_frame, text='True', command=lambda : self.add_train_after_prediction(True))
+        btn_recognise.grid(row=8, column=0, sticky=EW, padx=5, pady=5)
+        btn_nn_control = Button(toolbar_frame, text='False', command=lambda : self.add_train_after_prediction(False))
+        btn_nn_control.grid(row=8, column=1, sticky=EW, padx=5, pady=5)
+
         btn_exit = Button(toolbar_frame, text='Exit', command=self.parent.destroy)
-        btn_exit.grid(row=7, column=0, sticky=EW, padx=5, pady=5)
+        btn_exit.grid(row=9, column=0, sticky=EW, padx=5, pady=5)
 
         # all binds
         self.font_entry.bind('<FocusOut>', self.change_font_entry_func)
@@ -79,6 +89,31 @@ class AppGUI:
         self.parent.bind('<g>', self.draw_grid)
         self.parent.bind('<f>', self.fill_pixels)
         self.cnv.bind('<B1-Motion>', self.draw)
+
+    def add_train_after_prediction(self, pos):
+        prediction = self.prediction_label['text']
+        if pos:
+            pos = bool(eval(prediction))
+            self.save_train(boolean=pos, windowed=False)
+        else:
+            pos = bool(eval(prediction) - 1)
+            self.save_train(boolean=pos, windowed=False)
+
+
+    def recognise_func(self):
+        data = self.matrix
+        f = open('weights.goose', 'rb')
+        synaptic_weight = pickle.load(f)
+        f.close()
+        output = sigm(np.dot(data, synaptic_weight))
+        if output > 0.5:
+            self.prediction_label.configure(text='True')
+        else:
+            self.prediction_label.configure(text='False')
+
+    def open_nn_control_func(self):
+        nn_control = Toplevel(self.parent)
+        # nn_control.resizable(False, False)
 
     def change_mode_func(self, mode):
         if mode:
@@ -137,16 +172,17 @@ class AppGUI:
 
         # only GUI need to add func for save
 
-    def save_train(self, entry=None, boolean=None):
+    def save_train(self, entry=None, boolean=None, windowed=True):
         # TODO: prohibit adding more than one character and add red glow for letters
         #   https://www.cyberforum.ru/python-beginners/thread1196795.html
         file_time = int(time.time())
 
         if self.train_directory == 'Boolean_train':
-            file = open(f'{self.train_directory}\{boolean}_{file_time}.goose', 'wb')
+            file = open(f'{self.train_directory}/{boolean}_{file_time}.goose', 'wb')
             pickle.dump(self.matrix, file)
             file.close()
-            self.save_form.destroy()
+            if windowed:
+                self.save_form.destroy()
 
         elif self.train_directory == 'Number_train':
             data = entry.get()
@@ -201,6 +237,7 @@ class AppGUI:
         self.cnv.delete(ALL)
         self.matrix = []
         self.figures = []
+        self.prediction_label.configure(text='')
 
     def draw_grid(self, event):
         for i in range(0, 500, self.pixel):
