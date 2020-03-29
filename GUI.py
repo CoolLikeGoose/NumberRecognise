@@ -68,7 +68,7 @@ class AppGUI:
         self.btn_mode_boolean = Button(toolbar_frame, text='Boolean mode', command=lambda: self.change_mode_func(True))
         self.btn_mode_boolean.configure(bg='lightblue')
         self.btn_mode_boolean.grid(row=6, column=0, sticky=EW, padx=5, pady=5)
-        self.btn_mode_numbers = Button(toolbar_frame, text='Number mode', command=lambda: self.change_mode_func(False))
+        self.btn_mode_numbers = Button(toolbar_frame, text='Number mode', command=lambda: self.change_mode_func(False)) # TODO: Number mode doesnt work
         self.btn_mode_numbers.grid(row=6, column=1, sticky=EW, padx=5, pady=5)
 
         self.prediction_label = Label(toolbar_frame, font=('Ubuntu', 15))
@@ -81,6 +81,8 @@ class AppGUI:
 
         btn_exit = Button(toolbar_frame, text='Exit', command=self.parent.destroy)
         btn_exit.grid(row=9, column=0, sticky=EW, padx=5, pady=5)
+        btn_auto_recog = Button(toolbar_frame, text='Auto-Recognise', command=self.auto_recognise_func)
+        btn_auto_recog.grid(row=9, column=1, sticky=EW, padx=5, pady=5)
 
         # all binds
         self.font_entry.bind('<FocusOut>', self.change_font_entry_func)
@@ -92,6 +94,9 @@ class AppGUI:
         self.parent.bind('<f>', self.fill_pixels)
         self.cnv.bind('<B1-Motion>', self.draw)
 
+    def auto_recognise_func(self):
+        self.converting_func()
+        self.recognise_func()
     def add_train_after_prediction(self, pos):
         prediction = self.prediction_label['text']
         if pos:
@@ -255,9 +260,11 @@ class AppGUI:
                     self.matrix.append(0)
 
 
-root = Tk()
-root.geometry('700x500+200+200')
-root.resizable(False, False)
-AppGUI(root)
+if __name__ == '__main__':
+    root = Tk()
+    root.geometry('700x500+200+200')
+    root.resizable(False, False)
 
-root.mainloop()
+    AppGUI(root)
+
+    root.mainloop()
