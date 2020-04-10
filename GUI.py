@@ -54,7 +54,7 @@ class AppGUI:
         btn_delete_img.grid(row=3, column=1, sticky=EW, padx=5, pady=5)
 
         btn_recognise = Button(toolbar_frame, text='Recognise',
-                               command=self.recognise_func)  # TODO: need to do this func
+                               command=lambda: AppGUI.recognise_func(self.matrix, self.prediction_label))  # TODO: need to do this func
         btn_recognise.grid(row=4, column=0, sticky=EW, padx=5, pady=5)
         btn_add_train = Button(toolbar_frame, text='Add train', command=self.add_train_func)
         btn_add_train.grid(row=4, column=1, sticky=EW, padx=5, pady=5)
@@ -68,7 +68,8 @@ class AppGUI:
         self.btn_mode_boolean = Button(toolbar_frame, text='Boolean mode', command=lambda: self.change_mode_func(True))
         self.btn_mode_boolean.configure(bg='lightblue')
         self.btn_mode_boolean.grid(row=6, column=0, sticky=EW, padx=5, pady=5)
-        self.btn_mode_numbers = Button(toolbar_frame, text='Number mode', command=lambda: self.change_mode_func(False)) # TODO: Number mode doesnt work
+        self.btn_mode_numbers = Button(toolbar_frame, text='Number mode',
+                                       command=lambda: self.change_mode_func(False))  # TODO: Number mode doesnt work
         self.btn_mode_numbers.grid(row=6, column=1, sticky=EW, padx=5, pady=5)
 
         self.prediction_label = Label(toolbar_frame, font=('Ubuntu', 15))
@@ -96,7 +97,8 @@ class AppGUI:
 
     def auto_recognise_func(self):
         self.converting_func()
-        self.recognise_func()
+        AppGUI.recognise_func(self.matrix, self.prediction_label)
+
     def add_train_after_prediction(self, pos):
         prediction = self.prediction_label['text']
         if pos:
@@ -106,16 +108,16 @@ class AppGUI:
             pos = bool(eval(prediction) - 1)
             self.save_train(boolean=pos, windowed=False)
 
-    def recognise_func(self):
-        data = self.matrix
+    @staticmethod
+    def recognise_func(data, label):
         f = open('weights.goose', 'rb')
         synaptic_weight = pickle.load(f)
         f.close()
         output = sigm(np.dot(data, synaptic_weight))
         if output > 0.5:
-            self.prediction_label.configure(text='True')
+            label.configure(text='True')
         else:
-            self.prediction_label.configure(text='False')
+            label.configure(text='False')
 
     def open_nn_control_func(self):
         nn_control = Toplevel(self.parent)
